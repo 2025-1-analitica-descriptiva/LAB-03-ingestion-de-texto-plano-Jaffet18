@@ -74,6 +74,7 @@ def pregunta_01():
     df[headers[2]] = df[headers[2]].str.replace('%', '').str.replace(',', '.').astype(float)
 
     # Mostrar el DataFrame
-    print(df.head())
+    #print(df.head())
+    return df
 
 print(pregunta_01())
