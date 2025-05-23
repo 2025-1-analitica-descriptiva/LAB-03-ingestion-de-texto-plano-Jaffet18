@@ -16,7 +16,6 @@ def pregunta_01():
     - Las palabras clave deben estar separadas por coma y con un solo
       espacio entre palabra y palabra.
 
-
     """
     import pandas as pd
     import re
@@ -26,16 +25,16 @@ def pregunta_01():
         #lines = file.readlines()
         lines = [line.strip() for line in file.readlines() if line.strip()]
 
-    # Construcción de encabezados
+    # Construcción de encabezados con base en las dos primeras líneas
     header1 = re.split(r'\s{2,}', lines[0])
     header2 = re.split(r'\s{2,}', lines[1])
 
     # Construir encabezados combinados y separados por guiones bajos
     headers = [
         header1[0],  # Cluster
-        f"{header1[1]} {header2[0]}".strip(),  # Cantidad de palabras clave
-        f"{header1[2]} {header2[1]}".strip(),  # Porcentaje de palabras clave
-        header1[3]  # Principales palabras clave
+        f"{header1[1]} {header2[0]}".strip(),
+        f"{header1[2]} {header2[1]}".strip(),
+        header1[3]
     ]
     # Limpiar nombres de columnas
     headers = [header.lower().replace(' ', '_') for header in headers]
