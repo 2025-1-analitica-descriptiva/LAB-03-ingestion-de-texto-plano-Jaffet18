@@ -22,7 +22,7 @@ def pregunta_01():
     import re
 
     # Leer el archivo como texto plano
-    with open('../files/input/clusters_report.txt', 'r', encoding='utf-8') as file:
+    with open('./files/input/clusters_report.txt', 'r', encoding='utf-8') as file:
         #lines = file.readlines()
         lines = [line.strip() for line in file.readlines() if line.strip()]
 
