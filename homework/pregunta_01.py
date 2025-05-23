@@ -22,7 +22,7 @@ def pregunta_01():
     import re
 
     # Leer el archivo como texto plano
-    with open('../files/input/clusters_report.txt', 'r', encoding='utf-8') as file:
+    with open('./files/input/clusters_report.txt', 'r', encoding='utf-8') as file:
         #lines = file.readlines()
         lines = [line.strip() for line in file.readlines() if line.strip()]
 
@@ -69,8 +69,12 @@ def pregunta_01():
     # Limpiar espacios adicionales en palabras clave
     df[headers[3]] = df[headers[3]].str.replace(r'\s+', ' ', regex=True)
 
+    # Convertir a enteros los datos de las columnas 0 y 1
+    df[headers[0]] = df[headers[0]].astype(int)
+    df[headers[1]] = df[headers[1]].str.replace(',', '').astype(int)
+    df[headers[2]] = df[headers[2]].str.replace('%', '').str.replace(',', '.').astype(float)
+
     # Mostrar el DataFrame
     print(df.head())
-    return df
 
 print(pregunta_01())
