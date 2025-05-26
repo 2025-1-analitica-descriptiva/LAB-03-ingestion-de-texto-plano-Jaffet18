@@ -17,64 +17,68 @@ def pregunta_01():
       espacio entre palabra y palabra.
 
     """
-    import pandas as pd
-    import re
+import pandas as pd
+import re
 
-    # Leer el archivo como texto plano
-    with open('./files/input/clusters_report.txt', 'r', encoding='utf-8') as file:
-        #lines = file.readlines()
-        lines = [line.strip() for line in file.readlines() if line.strip()]
-
-    # Construcción de encabezados con base en las dos primeras líneas
-    header1 = re.split(r'\s{2,}', lines[0])
-    header2 = re.split(r'\s{2,}', lines[1])
-
-    # Construir encabezados combinados y separados por guiones bajos
-    headers = [
-        header1[0],  # Cluster
-        f"{header1[1]} {header2[0]}".strip(),
-        f"{header1[2]} {header2[1]}".strip(),
-        header1[3]
-    ]
-    # Limpiar nombres de columnas
-    headers = [header.lower().replace(' ', '_') for header in headers]
-
-    # Procesar las líneas para extraer datos
+def pregunta_01():
+    # Leer el archivo línea por línea
+    with open('files/input/clusters_report.txt', 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+    
+    # Eliminar líneas vacías y de separación
+    lines = [line.rstrip() for line in lines if line.strip() and not line.startswith('---')]
+    
+    # Procesar los datos
     data = []
     current_cluster = None
-
+    
     for line in lines:
-        line = line.strip()
-        if not line:
-            continue  # Ignorar líneas vacías
+        # Saltar las líneas de encabezado
+        if line.startswith('Cluster') or line.startswith('Cantidad'):
+            continue
         
-        # Detectar líneas de cluster (ej: "1     105             15,9 % ...")
+        # Verificar si es una nueva entrada de cluster
         if re.match(r'^\s*\d+\s+\d+', line):
-            parts = re.split(r'\s{2,}', line, maxsplit=3)  # Dividir en 4 partes
-            if len(parts) >= 4:
-                current_cluster = {
-                    headers[0]: parts[0].strip(),
-                    headers[1]: parts[1].strip(),
-                    headers[2]: parts[2].strip(),
-                    headers[3]: parts[3].strip()
-                }
+            if current_cluster:  # Guardar el cluster anterior
                 data.append(current_cluster)
+            
+            # Procesar nueva línea de cluster
+            parts = re.split(r'\s{2,}', line.strip(), maxsplit=3)
+            current_cluster = {
+                'cluster': int(parts[0]),
+                'cantidad_de_palabras_clave': int(parts[1]),
+                'porcentaje_de_palabras_clave': float(parts[2].replace(',', '.').replace('%', '').strip()),
+                'principales_palabras_clave': parts[3] if len(parts) > 3 else ''
+            }
         elif current_cluster:  # Continuación de palabras clave
-            current_cluster[headers[3]] += ' ' + line.strip()
-
+            current_cluster['principales_palabras_clave'] += ' ' + line.strip()
+    
+    # Añadir el último cluster
+    if current_cluster:
+        data.append(current_cluster)
+    
     # Crear DataFrame
     df = pd.DataFrame(data)
-
-    # Limpiar espacios adicionales en palabras clave
-    df[headers[3]] = df[headers[3]].str.replace(r'\s+', ' ', regex=True)
-
-    # Convertir a enteros los datos de las columnas 0 y 1
-    df[headers[0]] = df[headers[0]].astype(int)
-    df[headers[1]] = df[headers[1]].str.replace(',', '').astype(int)
-    df[headers[2]] = df[headers[2]].str.replace('%', '').str.replace(',', '.').astype(float)
-
-    # Mostrar el DataFrame
-    #print(df.head())
+    
+    # Función para limpiar palabras clave exactamente como en el test
+    def clean_keywords(keywords):
+        # Normalizar espacios
+        cleaned = ' '.join(keywords.split())
+        # Manejar comas específicamente
+        cleaned = re.sub(r',\s*', ', ', cleaned)
+        # Eliminar punto final si existe
+        if cleaned.endswith('.'):
+            cleaned = cleaned[:-1]
+        # Eliminar coma final si existe
+        if cleaned.endswith(','):
+            cleaned = cleaned[:-1]
+        return cleaned.strip()
+    
+    df['principales_palabras_clave'] = df['principales_palabras_clave'].apply(clean_keywords)
+    
+    # Ordenar por cluster y resetear índice
+    df = df.sort_values('cluster').reset_index(drop=True)
+    
     return df
 
 print(pregunta_01())
